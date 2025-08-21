@@ -1,0 +1,77 @@
+<!-- Formulário de Novo Produto (Fornecedor) -->
+<div class="product-form-container" id="fornecedorProductForm" style="display: none;">
+    <h2 class="product-form-title" id="fornecedorFormTitle">Cadastrar Novo Produto</h2>
+    <form id="fornecedorForm">
+        <input type="hidden" id="fornecedorProductId" name="productId">
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label for="fornecedorNomeProduto">Nome do Produto</label>
+                <input type="text" id="fornecedorNomeProduto" name="nomeProduto" required>
+            </div>
+            
+            <div class="form-group full-width">
+                <label>Imagem do Produto</label>
+                <div class="image-upload-area" onclick="document.getElementById('fornecedorImageInput').click()">
+                    <input type="file" id="fornecedorImageInput" accept="image/*" style="display: none;" onchange="previewImage(this, 'fornecedorImagePreview')">
+                    <div id="fornecedorImagePreview">
+                        <p>📷 Clique para adicionar uma imagem</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="fornecedorValidadeDias">Validade (dias)</label>
+                <input type="number" id="fornecedorValidadeDias" name="validadeDias" placeholder="Ex: 30" required>
+            </div>
+        </div>
+        
+        <!-- Códigos EAN -->
+        <div class="ean-codes-container">
+            <h3>Códigos EAN</h3>
+            <div id="fornecedorEanCodesContainer">
+                <div class="ean-code-item">
+                    <input type="text" name="eanCodes[]" placeholder="Código EAN" required>
+                    <button type="button" class="remove-ean-btn" onclick="removeEanCode(this)" style="display: none;">×</button>
+                </div>
+            </div>
+            <button type="button" class="add-ean-btn" onclick="addEanCode('fornecedor')">+ Adicionar Código EAN</button>
+        </div>
+        
+        <!-- Valores Nutricionais -->
+        <div class="nutritional-values">
+            <h3>Valores Nutricionais (por 100g)</h3>
+            <div class="nutritional-grid">
+                <div class="form-group">
+                    <label for="calorias">Calorias (kcal)</label>
+                    <input type="number" id="calorias" name="calorias" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="carboidratos">Carboidratos (g)</label>
+                    <input type="number" id="carboidratos" name="carboidratos" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="proteinas">Proteínas (g)</label>
+                    <input type="number" id="proteinas" name="proteinas" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="gorduras">Gorduras (g)</label>
+                    <input type="number" id="gorduras" name="gorduras" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="fibras">Fibras (g)</label>
+                    <input type="number" id="fibras" name="fibras" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="sodio">Sódio (mg)</label>
+                    <input type="number" id="sodio" name="sodio" step="0.01">
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-buttons">
+            <button type="button" class="back-to-dashboard-btn" onclick="showFornecedorSection('home')">← Voltar</button>
+            <button type="button" class="delete-button-form" id="fornecedorDeleteBtn" onclick="confirmDeleteProduct('fornecedor')" style="display: none;">EXCLUIR</button>
+            <button type="submit" class="submit-button-form" id="fornecedorSubmitBtn">CADASTRAR PRODUTO</button>
+        </div>
+    </form>
+</div>

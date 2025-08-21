@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Code - Sistema de Gestão</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Tela inicial - Sobre o site -->
+        <div class="about-screen" id="aboutScreen">
+            <div class="logo-main">SYSTEM<br>CODE</div>
+            <div class="logo-icon-main">
+                <img src="Logo-A.jpeg" alt="Logo da Empresa" />
+            </div>
+            <div class="about-text">
+                Bem-vindo ao System Code - sua solução completa para gestão empresarial! 
+                Nosso sistema foi desenvolvido para facilitar o controle de estoque, vendas e cadastros, 
+                oferecendo uma interface intuitiva para fornecedores e vendedores gerenciarem seus negócios de forma eficiente.
+            </div>
+            <div class="user-type-buttons">
+                <button class="user-type-btn fornecedor" onclick="selectUserType('fornecedor')">FORNECEDOR</button>
+                <button class="user-type-btn vendedor" onclick="selectUserType('vendedor')">VENDEDOR</button>
+            </div>
+        </div>
+
+        <!-- Tela de cadastro/login -->
+        <div class="auth-screen" id="authScreen">
+            <div class="sidebar">
+                <div class="logo">SYSTEM<br>CODE</div>
+                <div class="logo-icon">
+                    <img src="Logo-A.jpeg" alt="Logo da Empresa" />
+                </div>
+                <div class="auth-toggle">
+                    <button class="auth-btn active" id="loginBtn" onclick="toggleAuth('login')">ENTRAR</button>
+                    <button class="auth-btn" id="registerBtn" onclick="toggleAuth('register')">CADASTRAR</button>
+                </div>
+                <button class="back-btn" onclick="goBack()">← Voltar</button>
+            </div>
+            
+            <div class="form-section">
+                <h1 class="form-title" id="formTitle">Login</h1>
+                <form id="authForm">
+                    <div class="form-grid" id="formGrid">
+                        <!-- Campos serão inseridos dinamicamente -->
+                    </div>
+                    <button type="submit" class="submit-button" id="submitBtn">ENTRAR</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard Fornecedor -->
+        <div class="dashboard-screen" id="fornecedorDashboard">
+            <div class="dashboard-header">
+                <div class="logo">SYSTEM CODE</div>
+                <div class="dashboard-nav">
+                    <button class="nav-btn active" data-section="home">Home</button>
+                    <button class="nav-btn" data-section="novo-produto">Cadastrar Novo Produto</button>
+                    <button class="nav-btn" data-section="novo-lote">Cadastrar Novo Lote</button>
+                </div>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
+            <div class="dashboard-content" id="fornecedorContent">
+                <!-- Barra de pesquisa para fornecedor -->
+                <div class="search-container" id="fornecedorSearchContainer">
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="fornecedorSearchInput" placeholder="Pesquisar produtos por nome ou código EAN...">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <div class="search-results-info" id="fornecedorSearchInfo"></div>
+                </div>
+
+                <div class="dashboard-logo">
+                    <div class="dashboard-logo-icon">
+                        <img src="Logo-A.jpeg" alt="Logo da Empresa" />
+                    </div>
+                </div>
+
+                <!-- Lista de produtos do fornecedor -->
+                <div class="products-list" id="fornecedorProductsList">
+                    <div class="no-products">Nenhum produto cadastrado ainda</div>
+                </div>
+                
+                <!-- Container para o formulário do fornecedor -->
+                <div id="fornecedorFormContainer"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard Vendedor -->
+        <div class="dashboard-screen" id="vendedorDashboard">
+            <div class="dashboard-header">
+                <div class="logo">SYSTEM CODE</div>
+                <div class="dashboard-nav">
+                    <button class="nav-btn active" data-section="home">Home</button>
+                    <button class="nav-btn" data-section="relatorio">Relatório</button>
+                    <button class="nav-btn" data-section="vendas">Vendas</button>
+                    <button class="nav-btn" data-section="novo-produto">Cadastrar Novo Produto</button>
+                </div>
+                <button class="logout-btn" onclick="logout()">Sair</button>
+            </div>
+            <div class="dashboard-content" id="vendedorContent">
+                <!-- Barra de pesquisa para vendedor -->
+                <div class="search-container" id="vendedorSearchContainer">
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="vendedorSearchInput" placeholder="Pesquisar produtos por nome ou código EAN...">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <div class="search-results-info" id="vendedorSearchInfo"></div>
+                </div>
+
+                <div class="dashboard-logo">
+                    <div class="dashboard-logo-icon">
+                        <img src="Logo-A.jpeg" alt="Logo da Empresa" />
+                    </div>
+                </div>
+
+                <!-- Lista de produtos do vendedor -->
+                <div class="products-list" id="vendedorProductsList">
+                    <div class="no-products">Nenhum produto cadastrado ainda</div>
+                </div>
+                
+                <!-- Container para o formulário do vendedor -->
+                <div id="vendedorFormContainer"></div>
+            </div>
+        </div>
+
+        <!-- Modal de confirmação de exclusão -->
+        <div id="deleteModal" class="modal">
+            <div class="modal-content">
+                <h3>Confirmar Exclusão</h3>
+                <p>Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                    <button class="modal-btn modal-btn-confirm" onclick="deleteProduct()">Excluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="form-utils.js"></script>
+    <script src="expiry-alerts.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

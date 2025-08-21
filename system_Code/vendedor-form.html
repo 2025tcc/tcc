@@ -1,0 +1,61 @@
+<!-- Formulário de Novo Produto (Vendedor) -->
+<div class="product-form-container" id="vendedorProductForm" style="display: none;">
+    <h2 class="product-form-title" id="vendedorFormTitle">Cadastrar Novo Produto</h2>
+    <form id="vendedorForm">
+        <input type="hidden" id="vendedorProductId" name="productId">
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label for="vendedorNomeProduto">Nome do Produto</label>
+                <input type="text" id="vendedorNomeProduto" name="nomeProduto" required>
+            </div>
+            
+            <div class="form-group full-width">
+                <label>Imagem do Produto</label>
+                <div class="image-upload-area" onclick="document.getElementById('vendedorImageInput').click()">
+                    <input type="file" id="vendedorImageInput" accept="image/*" style="display: none;" onchange="previewImage(this, 'vendedorImagePreview')">
+                    <div id="vendedorImagePreview">
+                        <p>📷 Clique para adicionar uma imagem</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="vendedorPreco">Preço (R$)</label>
+                <input type="number" id="vendedorPreco" name="preco" step="0.01" placeholder="0,00" required>
+            </div>
+        </div>
+        
+        <!-- Códigos EAN -->
+        <div class="ean-codes-container">
+            <h3>Códigos EAN</h3>
+            <div id="vendedorEanCodesContainer">
+                <div class="ean-code-item">
+                    <input type="text" name="eanCodes[]" placeholder="Código EAN" required>
+                    <button type="button" class="remove-ean-btn" onclick="removeEanCode(this)" style="display: none;">×</button>
+                </div>
+            </div>
+            <button type="button" class="add-ean-btn" onclick="addEanCode('vendedor')">+ Adicionar Código EAN</button>
+        </div>
+        
+        <!-- Datas de Validade -->
+        <div class="expiry-dates-container">
+            <h3>Datas de Validade e Quantidades</h3>
+            <div id="expiryDatesContainer">
+                <div class="expiry-date-item">
+                    <div class="date-input-wrapper">
+                        <input type="text" class="date-input" name="dataValidade[]" placeholder="DD/MM/AAAA" required>
+                    </div>
+                    <input type="number" name="quantidade[]" placeholder="Quantidade" min="1" required>
+                    <button type="button" class="remove-expiry-btn" onclick="removeExpiryDate(this)" style="display: none;">×</button>
+                </div>
+            </div>
+            <button type="button" class="add-expiry-btn" onclick="addExpiryDate()">+ Adicionar Data de Validade</button>
+        </div>
+        
+        <div class="form-buttons">
+            <button type="button" class="back-to-dashboard-btn" onclick="showVendedorSection('home')">← Voltar</button>
+            <button type="button" class="delete-button-form" id="vendedorDeleteBtn" onclick="confirmDeleteProduct('vendedor')" style="display: none;">EXCLUIR</button>
+            <button type="submit" class="submit-button-form" id="vendedorSubmitBtn">CADASTRAR PRODUTO</button>
+        </div>
+    </form>
+</div>
