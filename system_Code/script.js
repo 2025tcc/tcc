@@ -1,3 +1,4 @@
+// Variáveis globais do sistema
 let currentUserType = '';
 let isLoginMode = true;
 let fornecedorProducts = [];
@@ -6,6 +7,7 @@ let currentEditingProductId = null;
 let currentEditingUserType = null;
 let currentSearchTerm = '';
 
+// Seleção de tipo de usuário
 function selectUserType(type) {
     currentUserType = type;
     document.getElementById('aboutScreen').style.display = 'none';
@@ -13,6 +15,7 @@ function selectUserType(type) {
     toggleAuth('login');
 }
 
+// Toggle entre login e cadastro
 function toggleAuth(mode) {
     isLoginMode = mode === 'login';
     
@@ -166,6 +169,7 @@ function applyMasks() {
     }
 }
 
+// Navegação
 function goBack() {
     document.getElementById('authScreen').style.display = 'none';
     document.getElementById('aboutScreen').style.display = 'flex';
@@ -255,8 +259,16 @@ function getFornecedorFormHTML() {
                             <input type="number" id="calorias" name="calorias" step="0.01">
                         </div>
                         <div class="form-group">
+                            <label for="valorEnergetico">Valor Energético (kJ)</label>
+                            <input type="number" id="valorEnergetico" name="valorEnergetico" step="0.01">
+                        </div>
+                        <div class="form-group">
                             <label for="carboidratos">Carboidratos (g)</label>
                             <input type="number" id="carboidratos" name="carboidratos" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="acucares">Açúcares (g)</label>
+                            <input type="number" id="acucares" name="acucares" step="0.01">
                         </div>
                         <div class="form-group">
                             <label for="proteinas">Proteínas (g)</label>
@@ -453,6 +465,18 @@ function setupVendedorFormListeners() {
                 return;
             }
 
+            // Mostrar aviso especial para múltiplas datas
+            if (datasValidade.length > 1) {
+                const confirmMessage = `⚠️ ATENÇÃO: Você está cadastrando um produto com ${datasValidade.length} datas de validade diferentes.\n\n` +
+                                     `Isso significa que o controle de estoque nas vendas será MANUAL. ` +
+                                     `O sistema não conseguirá atualizar automaticamente as quantidades por data.\n\n` +
+                                     `Deseja continuar mesmo assim?`;
+                
+                if (!confirm(confirmMessage)) {
+                    return;
+                }
+            }
+
             // Capturar imagem se houver
             const imageFile = document.getElementById('vendedorImageInput').files[0];
             let imageUrl = '';
@@ -481,53 +505,10 @@ function setupVendedorFormListeners() {
     
     // Inicializar validação melhorada
     setupImprovedDateValidation();
-}
-
-// NOVA FUNÇÃO: Adicionar validação visual melhorada
-function addImprovedDateStyles() {
-    if (document.getElementById('improvedDateStyles')) return;
     
-    const style = document.createElement('style');
-    style.id = 'improvedDateStyles';
-    style.textContent = `
-        .date-input.valid {
-            border-color: #28a745 !important;
-            background-color: #f8fff8 !important;
-        }
-        
-        .date-input.invalid {
-            border-color: #dc3545 !important;
-            background-color: #f8d7da !important;
-        }
-        
-        .date-input.warning {
-            border-color: #ffc107 !important;
-            background-color: #fffdf0 !important;
-        }
-        
-        .date-help-text {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-            text-align: center;
-        }
-        
-        .date-help-text.error {
-            color: #dc3545;
-        }
-        
-        .date-help-text.success {
-            color: #28a745;
-        }
-    `;
-    
-    document.head.appendChild(style);
+    // Verificar avisos iniciais
+    updateExpiryWarnings();
 }
-
-// Inicializar as melhorias ao carregar a página
-document.addEventListener('DOMContentLoaded', function() {
-    addImprovedDateStyles();
-});
 
 // Função de pesquisa
 function searchProducts(searchTerm, userType) {
@@ -633,6 +614,13 @@ function addExpiryDate() {
     const container = document.getElementById('expiryDatesContainer');
     const newItem = document.createElement('div');
     newItem.className = 'expiry-date-item';
+    
+    // Verificar se já há mais de uma data - adicionar aviso laranja
+    const currentItems = container.children.length;
+    if (currentItems >= 1) {
+        newItem.classList.add('has-warning');
+    }
+    
     newItem.innerHTML = `
         <div class="date-input-wrapper">
             <input type="text" class="date-input" name="dataValidade[]" placeholder="DD/MM/AAAA" required>
@@ -645,6 +633,9 @@ function addExpiryDate() {
     // Aplicar máscara de data ao novo campo
     applyDateMask(newItem.querySelector('.date-input'));
     updateExpiryButtons();
+    
+    // Adicionar classe de aviso a todos os itens se houver mais de 1
+    updateExpiryWarnings();
 }
 
 function removeExpiryDate(button) {
@@ -652,6 +643,36 @@ function removeExpiryDate(button) {
     if (container.children.length > 1) {
         button.parentElement.remove();
         updateExpiryButtons();
+        updateExpiryWarnings();
+    }
+}
+
+function updateExpiryWarnings() {
+    const container = document.getElementById('expiryDatesContainer');
+    const items = container.children;
+    
+    // Se há mais de um item, adicionar classe de aviso a todos
+    for (let i = 0; i < items.length; i++) {
+        if (items.length > 1) {
+            items[i].classList.add('has-warning');
+        } else {
+            items[i].classList.remove('has-warning');
+        }
+    }
+    let generalWarning = container.parentElement.querySelector('.general-expiry-warning');
+    
+    if (items.length > 1 && !generalWarning) {
+        generalWarning = document.createElement('div');
+        generalWarning.className = 'general-expiry-warning';
+        generalWarning.innerHTML = `
+            <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 18px;">⚠️</span>
+                <span>Atenção: Produto com múltiplas datas de validade. Isso requer controle manual do estoque nas vendas.</span>
+            </div>
+        `;
+        container.parentElement.insertBefore(generalWarning, container);
+    } else if (items.length === 1 && generalWarning) {
+        generalWarning.remove();
     }
 }
 
@@ -670,7 +691,6 @@ function updateExpiryButtons() {
 
 // Máscara para data DD/MM/AAAA
 function applyDateMask(input) {
-    // Variável para controlar se já mostramos o aviso para este campo
     let hasShownAlert = false;
     
     input.addEventListener('input', function(e) {
@@ -688,7 +708,6 @@ function applyDateMask(input) {
         
         e.target.value = value;
         
-        // Reset o flag quando o usuário começar a digitar
         if (!hasShownAlert) {
             e.target.style.borderColor = '#ddd';
         }
@@ -697,22 +716,18 @@ function applyDateMask(input) {
     input.addEventListener('blur', function(e) {
         const value = e.target.value.trim();
         
-        // Se o campo estiver vazio, não validar
         if (!value) {
             e.target.style.borderColor = '#ddd';
             hasShownAlert = false;
             return;
         }
         
-        // Só mostrar o alert se ainda não mostramos para este campo
         if (value && !isValidDate(value) && !hasShownAlert) {
             e.target.style.borderColor = '#dc3545';
             hasShownAlert = true;
             
-            // Usar setTimeout para evitar o loop infinito
             setTimeout(() => {
                 alert('Por favor, insira uma data válida no formato DD/MM/AAAA');
-                // NÃO forçar o foco de volta - deixar o usuário decidir
             }, 100);
         } else if (isValidDate(value)) {
             e.target.style.borderColor = '#28a745';
@@ -720,7 +735,6 @@ function applyDateMask(input) {
         }
     });
     
-    // Reset o flag quando o campo receber foco novamente
     input.addEventListener('focus', function(e) {
         if (hasShownAlert) {
             hasShownAlert = false;
@@ -728,7 +742,6 @@ function applyDateMask(input) {
         }
     });
 }
-
 
 function isValidDate(dateString) {
     const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
@@ -743,32 +756,24 @@ function isValidDate(dateString) {
     // Validações básicas
     if (month < 1 || month > 12) return false;
     if (day < 1 || day > 31) return false;
-    if (year < 1900 || year > 2100) return false;
+    if (year < 2024 || year > 9999) return false;
     
     // Verificar dias válidos por mês
     const daysInMonth = new Date(year, month, 0).getDate();
     if (day > daysInMonth) return false;
     
-    // Verificar se a data não é muito antiga (opcional)
     const inputDate = new Date(year, month - 1, day);
-    const currentDate = new Date();
-    const twoYearsAgo = new Date();
-    twoYearsAgo.setFullYear(currentDate.getFullYear() - 2);
+    const minDate = new Date(2024, 0, 1);
+    const maxDate = new Date(9999, 11, 31);
     
-    // Permitir datas de até 2 anos atrás até 10 anos no futuro
-    const tenYearsFromNow = new Date();
-    tenYearsFromNow.setFullYear(currentDate.getFullYear() + 10);
-    
-    return inputDate >= twoYearsAgo && inputDate <= tenYearsFromNow;
+    return inputDate >= minDate && inputDate <= maxDate;
 }
 
-// NOVA FUNÇÃO: Validação em tempo real mais suave
 function setupImprovedDateValidation() {
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('date-input')) {
             const value = e.target.value;
             
-            // Feedback visual em tempo real
             if (value.length === 10) {
                 if (isValidDate(value)) {
                     e.target.style.borderColor = '#28a745';
@@ -841,6 +846,8 @@ function showVendedorSection(section) {
     const logo = content.querySelector('.dashboard-logo');
     const productsList = document.getElementById('vendedorProductsList');
     const searchContainer = document.getElementById('vendedorSearchContainer');
+    const salesInterface = document.getElementById('salesInterface');
+    const reportsInterface = document.getElementById('reportsInterface');
     
     // Atualizar navegação
     document.querySelectorAll('#vendedorDashboard .nav-btn').forEach(btn => {
@@ -855,11 +862,39 @@ function showVendedorSection(section) {
     productsList.classList.remove('show');
     if (productForm) productForm.style.display = 'none';
     searchContainer.classList.remove('show');
-
+    if (salesInterface) salesInterface.style.display = 'none';
+    if (reportsInterface) reportsInterface.style.display = 'none';
+    
+    // CORREÇÃO: Desativar sistema de relatórios se estiver ativo
+    if (window.reportsSystem && window.reportsSystem.isActive && section !== 'relatorio') {
+        window.reportsSystem.isActive = false; // Adicione esta linha
+    }
+    
     if (section === 'novo-produto') {
         if (productForm) {
             productForm.style.display = 'block';
             resetVendedorForm();
+        }
+    } else if (section === 'vendas') {
+        if (!vendedorProducts || vendedorProducts.length === 0) {
+            alert('Você precisa cadastrar produtos primeiro antes de fazer vendas!');
+            // Voltar para home
+            document.querySelectorAll('#vendedorDashboard .nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-section') === 'home') {
+                    btn.classList.add('active');
+                }
+            });
+            if (logo) logo.style.display = 'block';
+            return;
+        }
+        
+        if (window.salesSystem) {
+            window.salesSystem.showSalesInterface();
+        }
+    } else if (section === 'relatorio') {
+        if (window.reportsSystem) {
+            window.reportsSystem.showReportsInterface();
         }
     } else if (section === 'home') {
         if (vendedorProducts.length === 0) {
@@ -869,7 +904,6 @@ function showVendedorSection(section) {
             productsList.classList.add('show');
             renderVendedorProducts();
             
-            // NOVO: Verificar vencimentos quando mostrar home
             if (window.ExpiryAlerts) {
                 setTimeout(() => {
                     window.ExpiryAlerts.checkAndAlertExpiry();
@@ -881,17 +915,18 @@ function showVendedorSection(section) {
         if (logo) logo.style.display = 'block';
     }
 
-    // Limpar pesquisa ao trocar de seção
-    const searchInput = document.getElementById('vendedorSearchInput');
-    if (searchInput) {
-        searchInput.value = '';
-        currentSearchTerm = '';
-    }
+    // Limpar pesquisa ao trocar de seção (apenas se não for seção de vendas)
+    if (section !== 'vendas') {
+        const searchInput = document.getElementById('vendedorSearchInput');
+        if (searchInput) {
+            searchInput.value = '';
+            currentSearchTerm = '';
+        }
 
-    // Remover botão de limpar filtro se existir
-    const clearFilterBtn = document.getElementById('clearFilterBtn');
-    if (clearFilterBtn) {
-        clearFilterBtn.remove();
+        const clearFilterBtn = document.getElementById('clearFilterBtn');
+        if (clearFilterBtn) {
+            clearFilterBtn.remove();
+        }
     }
 }
 // Renderizar produtos do fornecedor
@@ -964,7 +999,7 @@ function renderVendedorProducts() {
             searchInfo.innerHTML = `${filteredProducts.length} produto(s) encontrado(s) para "${currentSearchTerm}"`;
         }
     } else {
-        // NOVO: Contar produtos próximos do vencimento
+        // Contar produtos próximos do vencimento
         if (window.ExpiryAlerts) {
             const { expiringProducts, expiredProducts } = window.ExpiryAlerts.checkExpiringProducts();
             const alertCount = expiringProducts.length + expiredProducts.length;
@@ -1004,7 +1039,7 @@ function renderVendedorProducts() {
         let cardClass = 'product-card';
         let expiryInfo = '';
         
-        // NOVO: Verificar status de vencimento para cada produto
+        // Verificar status de vencimento para cada produto
         if (window.ExpiryAlerts) {
             product.validades.forEach(validade => {
                 const status = window.ExpiryAlerts.getExpiryStatus(validade.data);
@@ -1045,6 +1080,16 @@ function renderVendedorProducts() {
             </div>
         `;
     }).join('');
+    
+    // Adicionar labels de controle de estoque após renderizar
+    setTimeout(() => {
+        sortedProducts.forEach((product, index) => {
+            const cards = container.querySelectorAll('.product-card');
+            if (cards[index] && window.addInventoryLabelsToProductCard) {
+                window.addInventoryLabelsToProductCard(product, cards[index]);
+            }
+        });
+    }, 100);
 }
 
 // Editar produto do fornecedor
@@ -1056,6 +1101,8 @@ function editFornecedorProduct(productId) {
     document.getElementById('fornecedorProductId').value = product.id;
     document.getElementById('fornecedorNomeProduto').value = product.nomeProduto;
     document.getElementById('fornecedorValidadeDias').value = product.validadeDias;
+    document.getElementById('valorEnergetico').value = product.valorEnergetico || '';
+    document.getElementById('acucares').value = product.acucares || '';  
 
     // Valores nutricionais
     document.getElementById('calorias').value = product.calorias || '';
@@ -1308,6 +1355,8 @@ function saveOrUpdateFornecedorProduct(formData, eanCodes, isEditing, productId,
         gorduras: parseFloat(formData.get('gorduras')) || null,
         fibras: parseFloat(formData.get('fibras')) || null,
         sodio: parseFloat(formData.get('sodio')) || null,
+        valorEnergetico: parseFloat(formData.get('valorEnergetico')) || null,
+        acucares: parseFloat(formData.get('acucares')) || null,
         image: imageUrl
     };
 
@@ -1355,15 +1404,82 @@ function saveOrUpdateVendedorProduct(formData, eanCodes, datasValidade, quantida
     }
 
     console.log('Produto Vendedor:', productData);
+    console.log('Array após salvar:', vendedorProducts);
+    
+    // Atualizar a variável global do sistema de vendas
+    if (window.vendedorProducts) {
+        window.vendedorProducts = vendedorProducts;
+    }
+    
     showVendedorSection('home');
     
-    // NOVO: Atualizar contador após salvar
+    // Atualizar contador após salvar
     setTimeout(() => {
         updateExpiryButtonCounter();
     }, 500);
 }
 
-// Envio do formulário de autenticação
+function updateExpiryButtonCounter() {
+    const expiryBtn = document.getElementById('expiryCheckBtn');
+    if (!expiryBtn || !window.ExpiryAlerts) return;
+    
+    const { expiringProducts, expiredProducts } = window.ExpiryAlerts.checkExpiringProducts();
+    const totalAlerts = expiringProducts.length + expiredProducts.length;
+    
+    if (totalAlerts > 0) {
+        expiryBtn.innerHTML = `⚠️ Vencimentos (${totalAlerts})`;
+        expiryBtn.style.background = '#dc3545';
+        expiryBtn.style.color = 'white';
+        expiryBtn.style.animation = 'buttonPulse 2s infinite';
+    } else {
+        expiryBtn.innerHTML = '✅ Vencimentos';
+        expiryBtn.style.background = '#28a745';
+        expiryBtn.style.color = 'white';
+        expiryBtn.style.animation = 'none';
+    }
+}
+
+function addExpiryCheckButton() {
+    const searchContainer = document.getElementById('vendedorSearchContainer');
+    if (searchContainer && !document.getElementById('expiryCheckBtn')) {
+        const expiryBtn = document.createElement('button');
+        expiryBtn.id = 'expiryCheckBtn';
+        expiryBtn.innerHTML = '⚠️ Verificar Vencimentos';
+        expiryBtn.className = 'expiry-check-btn';
+        expiryBtn.style.cssText = `
+            background: #ffc107;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin: 10px auto;
+            display: block;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        `;
+        
+        expiryBtn.onclick = function() {
+            if (window.ExpiryAlerts) {
+                window.ExpiryAlerts.applyExpiryFilter();
+            }
+        };
+        
+        expiryBtn.onmouseover = function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+        };
+        
+        expiryBtn.onmouseout = function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        };
+        
+        searchContainer.appendChild(expiryBtn);
+    }
+}
+
+// Event listeners principais
 document.addEventListener('DOMContentLoaded', function() {
     // Configurar event listeners para auth form
     const authForm = document.getElementById('authForm');
@@ -1393,7 +1509,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-    
     }
 
     // Navegação nos dashboards
@@ -1401,6 +1516,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('nav-btn')) {
             const section = e.target.getAttribute('data-section');
             const dashboard = e.target.closest('.dashboard-screen');
+            
+            // Verificar se é seção de vendas e se há produtos
+            if (section === 'vendas' && dashboard.id === 'vendedorDashboard') {
+                console.log('Clicou em vendas, verificando produtos:', vendedorProducts);
+                if (!vendedorProducts || vendedorProducts.length === 0) {
+                    alert('Você precisa cadastrar produtos primeiro antes de fazer vendas!');
+                    return;
+                }
+            }
             
             if (dashboard.id === 'fornecedorDashboard') {
                 showFornecedorSection(section);
@@ -1416,15 +1540,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (event.target === modal) {
             closeDeleteModal();
         }
+        
+        // Fechar modais do sistema de vendas clicando fora
+        const salesModals = document.querySelectorAll('.sales-modal');
+        salesModals.forEach(modal => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
     }
 
     // Configurar event listeners para pesquisa
     setupSearchListeners();
 
-    // Observer para atualizar botões de remover data de validade
+    // Observer para atualizar botões
     const observer = new MutationObserver(function() {
         updateExpiryButtons();
-        // Também observar mudanças nos EAN codes
         updateEanButtons('fornecedorEanCodesContainer');
         updateEanButtons('vendedorEanCodesContainer');
     });
@@ -1445,6 +1576,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (vendedorEanContainer) {
             observer.observe(vendedorEanContainer, { childList: true });
         }
+        
+        // Inicializar sistema de alertas de vencimento
         if (window.ExpiryAlerts) {
             window.ExpiryAlerts.init();
         }
@@ -1453,32 +1586,22 @@ document.addEventListener('DOMContentLoaded', function() {
         // Atualizar contador periodicamente
         setInterval(updateExpiryButtonCounter, 60000); // A cada minuto
         
-        console.log('Sistema de alertas de vencimento carregado!');
+        console.log('Sistema principal carregado!');
     }, 1000);
 
-    // Remover dados de exemplo - começar vazio
-    fornecedorProducts = [];
-    vendedorProducts = [];
-    
-    function updateExpiryButtonCounter() {
-    const expiryBtn = document.getElementById('expiryCheckBtn');
-    if (!expiryBtn || !window.ExpiryAlerts) return;
-    
-    const { expiringProducts, expiredProducts } = window.ExpiryAlerts.checkExpiringProducts();
-    const totalAlerts = expiringProducts.length + expiredProducts.length;
-    
-    if (totalAlerts > 0) {
-        expiryBtn.innerHTML = `⚠️ Vencimentos (${totalAlerts})`;
-        expiryBtn.style.background = '#dc3545';
-        expiryBtn.style.color = 'white';
-        expiryBtn.style.animation = 'buttonPulse 2s infinite';
-    } else {
-        expiryBtn.innerHTML = '✅ Vencimentos';
-        expiryBtn.style.background = '#28a745';
-        expiryBtn.style.color = 'white';
-        expiryBtn.style.animation = 'none';
-        
+    // Manter arrays vazios inicialmente - NÃO redefinir no final
+    console.log('Sistema inicializado - Arrays:', { fornecedorProducts, vendedorProducts });
+});
+
+// Tornar funções disponíveis globalmente para uso com o sistema de vendas
+window.showVendedorSection = showVendedorSection;
+
+// CORREÇÃO PRINCIPAL: Garantir que a variável vendedorProducts seja sempre acessível globalmente
+Object.defineProperty(window, 'vendedorProducts', {
+    get: function() {
+        return vendedorProducts;
+    },
+    set: function(value) {
+        vendedorProducts = value;
     }
-}
-    
 });
